@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Daily Routine">
@@ -191,7 +191,7 @@
       <div id="header-day"></div>
       <div id="header-sub"></div>
     </div>
-    <button class="btn btn-ghost btn-sm" onclick="openManage()">⚙ Manage</button>
+    <button id="manage-btn" class="btn btn-ghost btn-sm" onclick="openManage()">⚙ Manage</button>
   </div>
 
   <div id="content">
@@ -245,6 +245,9 @@
 <div id="modal-manage" class="modal-bg"><div class="modal"><div class="modal-drag"></div><h2>Manage</h2><div class="manage-tabs"><div class="manage-tab active" onclick="switchManageTab('workouts')">Workouts</div><div class="manage-tab" onclick="switchManageTab('exercises')">Exercises</div></div><div id="manage-workouts-panel"></div><div id="manage-exercises-panel" style="display:none"></div></div></div>
 <div id="modal-add-workout" class="modal-bg"><div class="modal"><div class="modal-drag"></div><h2>New Workout</h2><label>Workout Name</label><input type="text" id="wk-name-input" placeholder="e.g. Push Day"><label>Days</label><div class="day-chips" id="day-chips"></div><label>Exercises</label><div id="wk-ex-pick" style="background:var(--surface2);border-radius:12px;padding:4px 14px;margin-bottom:16px;border:1.5px solid var(--border);"></div><div class="row"><button class="btn btn-ghost" onclick="closeModal('modal-add-workout')">Cancel</button><button class="btn btn-dark" onclick="saveWorkout()">Save</button></div></div></div>
 <div id="modal-add-exercise" class="modal-bg"><div class="modal"><div class="modal-drag"></div><h2>New Exercise</h2><label>Name</label><input type="text" id="ex-name-input" placeholder="e.g. Bench Press"><label>Type</label><select id="ex-type-input"><option value="weight">Weight (kg + reps)</option><option value="timer">Timer (seconds)</option><option value="counter">Counter (reps)</option></select><div class="row"><button class="btn btn-ghost" onclick="closeModal('modal-add-exercise')">Cancel</button><button class="btn btn-dark" onclick="saveExercise()">Add</button></div></div></div>
+<div id="modal-edit-exercise" class="modal-bg"><div class="modal"><div class="modal-drag"></div><h2>Edit Exercise</h2><label>Name</label><input type="text" id="edit-ex-name-input" placeholder="e.g. Bench Press"><label>Type</label><select id="edit-ex-type-input"><option value="weight">Weight (kg + reps)</option><option value="timer">Timer (seconds)</option><option value="counter">Counter (reps)</option></select><div class="row"><button class="btn btn-ghost" onclick="closeModal('modal-edit-exercise')">Cancel</button><button class="btn btn-dark" onclick="saveEditExercise()">Save</button></div></div></div>
+<div id="modal-edit-workout" class="modal-bg"><div class="modal"><div class="modal-drag"></div><h2>Edit Workout</h2><label>Workout Name</label><input type="text" id="edit-wk-name-input" placeholder="e.g. Push Day"><label>Days</label><div class="day-chips" id="edit-day-chips"></div><label>Exercises</label><div id="edit-wk-ex-pick" style="background:var(--surface2);border-radius:12px;padding:4px 14px;margin-bottom:16px;border:1.5px solid var(--border);"></div><div class="row"><button class="btn btn-ghost" onclick="closeModal('modal-edit-workout')">Cancel</button><button class="btn btn-dark" onclick="saveEditWorkout()">Save</button></div></div></div>
+<div id="modal-edit-stretch" class="modal-bg"><div class="modal"><div class="modal-drag"></div><h2>Edit Stretch</h2><label>Exercise Name</label><input type="text" id="edit-str-name-input" placeholder="e.g. Hip Flexor Stretch"><label>Duration (seconds)</label><input type="number" id="edit-str-dur-input" min="5" max="600"><div class="row"><button class="btn btn-ghost" onclick="closeModal('modal-edit-stretch')">Cancel</button><button class="btn btn-dark" onclick="saveEditStretch()">Save</button></div></div></div>
 
 <!-- Timer -->
 <div id="timer-screen">
@@ -282,6 +285,7 @@ function switchTab(t){
   currentTab=t;
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.toggle('active',el.dataset.tab===t));
   document.querySelectorAll('.section').forEach(el=>el.classList.toggle('active',el.id==='section-'+t));
+  document.getElementById('manage-btn').style.display=t==='gym'?'':'none';
   renderAll();
 }
 
@@ -379,7 +383,7 @@ function renderStretch(){
   if(sub)sub.textContent=S.stretches.length>0?`${S.stretches.length} exercises · ~${Math.ceil(total/60)} min`:'Add stretches to begin';
   const el=document.getElementById('stretch-list');
   if(S.stretches.length===0){el.innerHTML=`<div class="empty-state"><div class="icon">🧘</div><p>No stretches yet.<br>Tap + Add to build your routine.</p></div>`;return;}
-  el.innerHTML=`<div class="card">${S.stretches.map((s,i)=>`<div class="ex-row" style="cursor:default"><div class="stretch-num">${i+1}</div><div style="flex:1"><div class="ex-name">${escHtml(s.name)}</div></div><div class="ex-val">${s.dur}s</div><button class="delete-btn" onclick="deleteStretch('${s.id}')">✕</button></div>`).join('')}</div>`;
+  el.innerHTML=`<div class="card">${S.stretches.map((s,i)=>`<div class="ex-row" style="cursor:default"><div class="stretch-num">${i+1}</div><div style="flex:1"><div class="ex-name">${escHtml(s.name)}</div></div><div class="ex-val">${s.dur}s</div><button class="delete-btn" style="font-size:14px;padding:4px 6px;" onclick="openEditStretch('${s.id}')">✏️</button><button class="delete-btn" onclick="deleteStretch('${s.id}')">✕</button></div>`).join('')}</div>`;
 }
 function openAddStretch(){document.getElementById('str-name-input').value='';document.getElementById('str-dur-input').value='30';openModal('modal-add-stretch');}
 function saveStretch(){const name=document.getElementById('str-name-input').value.trim();const dur=parseInt(document.getElementById('str-dur-input').value)||30;if(!name)return;S.stretches.push({id:uid(),name,dur});save();closeModal('modal-add-stretch');renderStretch();}
@@ -434,18 +438,36 @@ function renderManageWorkouts(){
   const el=document.getElementById('manage-workouts-panel');
   let html=`<div style="display:flex;justify-content:flex-end;margin-bottom:12px;"><button class="btn btn-dark btn-sm" onclick="openAddWorkout()">+ New Workout</button></div>`;
   if(S.workouts.length===0)html+=`<div style="text-align:center;padding:24px;color:var(--text-dim);font-weight:600;font-size:14px;">No workouts yet.</div>`;
-  else S.workouts.forEach(wk=>{const exNames=(wk.exerciseIds||[]).map(id=>S.exercises.find(e=>e.id===id)?.name).filter(Boolean);html+=`<div class="workout-list-item"><div class="workout-list-header"><div class="workout-list-name">${escHtml(wk.name)}</div><button class="delete-btn" onclick="deleteWorkout('${wk.id}')">✕</button></div><div style="font-size:12px;color:var(--text-dim);font-weight:600;">${exNames.join(', ')||'No exercises'}</div><div class="workout-days">${(wk.days||[]).map(d=>`<span class="workout-day-badge">${DAYS[d]}</span>`).join('')}</div></div>`;});
+  else S.workouts.forEach(wk=>{
+    const exNames=(wk.exerciseIds||[]).map(id=>S.exercises.find(e=>e.id===id)?.name).filter(Boolean);
+    html+=`<div class="workout-list-item"><div class="workout-list-header"><div class="workout-list-name">${escHtml(wk.name)}</div><div style="display:flex;gap:4px;"><button class="delete-btn" style="font-size:14px;padding:4px 6px;" onclick="openEditWorkout('${wk.id}')">✏️</button><button class="delete-btn" onclick="deleteWorkout('${wk.id}')">✕</button></div></div><div style="font-size:12px;color:var(--text-dim);font-weight:600;">${exNames.join(', ')||'No exercises'}</div><div class="workout-days">${(wk.days||[]).map(d=>`<span class="workout-day-badge">${DAYS[d]}</span>`).join('')}</div></div>`;
+  });
   el.innerHTML=html;
 }
 function renderManageExercises(){
   const el=document.getElementById('manage-exercises-panel');
   let html=`<div style="display:flex;justify-content:flex-end;margin-bottom:12px;"><button class="btn btn-dark btn-sm" onclick="openAddExercise()">+ New Exercise</button></div>`;
   if(S.exercises.length===0)html+=`<div style="text-align:center;padding:24px;color:var(--text-dim);font-weight:600;font-size:14px;">No exercises yet.</div>`;
-  else{html+=`<div style="background:var(--surface2);border-radius:12px;padding:4px 14px;border:1.5px solid var(--border);">`;S.exercises.forEach(ex=>{html+=`<div class="ex-list-item"><div class="ex-list-name">${escHtml(ex.name)}</div><span class="pill pill-${ex.type}" style="margin-right:8px;">${ex.type}</span><button class="delete-btn" onclick="deleteExercise('${ex.id}')">✕</button></div>`;});html+=`</div>`;}
+  else{html+=`<div style="background:var(--surface2);border-radius:12px;padding:4px 14px;border:1.5px solid var(--border);">`;S.exercises.forEach(ex=>{html+=`<div class="ex-list-item"><div class="ex-list-name">${escHtml(ex.name)}</div><span class="pill pill-${ex.type}" style="margin-right:8px;">${ex.type}</span><button class="delete-btn" style="color:var(--text-dim);font-size:14px;padding:4px 6px;" onclick="openEditExercise('${ex.id}')">✏️</button><button class="delete-btn" onclick="deleteExercise('${ex.id}')">✕</button></div>`;});html+=`</div>`;}
   el.innerHTML=html;
 }
 function deleteWorkout(id){if(!confirm('Delete this workout?'))return;S.workouts=S.workouts.filter(w=>w.id!==id);save();renderManage();renderGym();}
 function deleteExercise(id){if(!confirm('Delete this exercise?'))return;S.exercises=S.exercises.filter(e=>e.id!==id);S.workouts.forEach(w=>{w.exerciseIds=(w.exerciseIds||[]).filter(i=>i!==id);});save();renderManage();renderGym();}
+
+let editExId=null;
+function openEditExercise(id){
+  const ex=S.exercises.find(e=>e.id===id);if(!ex)return;
+  editExId=id;
+  document.getElementById('edit-ex-name-input').value=ex.name;
+  document.getElementById('edit-ex-type-input').value=ex.type;
+  openModal('modal-edit-exercise');
+}
+function saveEditExercise(){
+  const name=document.getElementById('edit-ex-name-input').value.trim();if(!name)return;
+  const ex=S.exercises.find(e=>e.id===editExId);if(!ex)return;
+  ex.name=name;ex.type=document.getElementById('edit-ex-type-input').value;
+  save();closeModal('modal-edit-exercise');renderManage();renderGym();
+}
 
 let selectedDays=[],selectedExIds=[];
 function openAddWorkout(){
@@ -460,8 +482,46 @@ function openAddWorkout(){
 function toggleDay(dow){const idx=selectedDays.indexOf(dow);if(idx>=0)selectedDays.splice(idx,1);else selectedDays.push(dow);document.querySelectorAll('.day-chip').forEach(el=>el.classList.toggle('sel',selectedDays.includes(parseInt(el.dataset.dow))));}
 function toggleExPick(id){const idx=selectedExIds.indexOf(id);if(idx>=0)selectedExIds.splice(idx,1);else selectedExIds.push(id);document.getElementById('expick-'+id)?.classList.toggle('sel',selectedExIds.includes(id));}
 function saveWorkout(){const name=document.getElementById('wk-name-input').value.trim();if(!name)return;S.workouts.push({id:uid(),name,days:[...selectedDays],exerciseIds:[...selectedExIds]});save();closeModal('modal-add-workout');renderManage();renderGym();}
+
+let editWkId=null,editWkDays=[],editWkExIds=[];
+function openEditWorkout(id){
+  const wk=S.workouts.find(w=>w.id===id);if(!wk)return;
+  editWkId=id;editWkDays=[...(wk.days||[])];editWkExIds=[...(wk.exerciseIds||[])];
+  document.getElementById('edit-wk-name-input').value=wk.name;
+  document.getElementById('edit-day-chips').innerHTML=DAYS.map((d,i)=>`<div class="day-chip ${editWkDays.includes(i)?'sel':''}" data-dow="${i}" onclick="toggleEditDay(${i})">${d}</div>`).join('');
+  const pick=document.getElementById('edit-wk-ex-pick');
+  if(S.exercises.length===0)pick.innerHTML=`<div style="color:var(--text-faint);padding:12px 0;font-size:13px;font-weight:600;">No exercises yet.</div>`;
+  else pick.innerHTML=S.exercises.map(ex=>`<div class="add-ex-to-workout" onclick="toggleEditExPick('${ex.id}')"><div class="add-ex-check ${editWkExIds.includes(ex.id)?'sel':''}" id="editexpick-${ex.id}"></div><div class="add-ex-label">${escHtml(ex.name)}</div><span class="pill pill-${ex.type}">${ex.type}</span></div>`).join('');
+  openModal('modal-edit-workout');
+}
+function toggleEditDay(dow){const idx=editWkDays.indexOf(dow);if(idx>=0)editWkDays.splice(idx,1);else editWkDays.push(dow);document.querySelectorAll('#edit-day-chips .day-chip').forEach(el=>el.classList.toggle('sel',editWkDays.includes(parseInt(el.dataset.dow))));}
+function toggleEditExPick(id){const idx=editWkExIds.indexOf(id);if(idx>=0)editWkExIds.splice(idx,1);else editWkExIds.push(id);document.getElementById('editexpick-'+id)?.classList.toggle('sel',editWkExIds.includes(id));}
+function saveEditWorkout(){
+  const name=document.getElementById('edit-wk-name-input').value.trim();if(!name)return;
+  const wk=S.workouts.find(w=>w.id===editWkId);if(!wk)return;
+  wk.name=name;wk.days=[...editWkDays];wk.exerciseIds=[...editWkExIds];
+  save();closeModal('modal-edit-workout');renderManage();renderGym();
+}
+
 function openAddExercise(){document.getElementById('ex-name-input').value='';document.getElementById('ex-type-input').value='weight';openModal('modal-add-exercise');}
 function saveExercise(){const name=document.getElementById('ex-name-input').value.trim();if(!name)return;S.exercises.push({id:uid(),name,type:document.getElementById('ex-type-input').value});save();closeModal('modal-add-exercise');renderManage();renderGym();}
+
+let editStrId=null;
+function openEditStretch(id){
+  const s=S.stretches.find(s=>s.id===id);if(!s)return;
+  editStrId=id;
+  document.getElementById('edit-str-name-input').value=s.name;
+  document.getElementById('edit-str-dur-input').value=s.dur;
+  openModal('modal-edit-stretch');
+}
+function saveEditStretch(){
+  const name=document.getElementById('edit-str-name-input').value.trim();
+  const dur=parseInt(document.getElementById('edit-str-dur-input').value)||30;
+  if(!name)return;
+  const s=S.stretches.find(s=>s.id===editStrId);if(!s)return;
+  s.name=name;s.dur=dur;
+  save();closeModal('modal-edit-stretch');renderStretch();
+}
 
 // MODALS
 function openModal(id){document.getElementById(id).classList.add('open');}
